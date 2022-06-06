@@ -10,7 +10,11 @@ install! 'cocoapods',
   :deterministic_uuids => false
 
 target 'HelloWorld' do
-  use_expo_modules!
+  use_expo_modules!(
+    tests: [
+      'expo-updates',
+    ],
+  )
   config = use_native_modules!
 
   use_frameworks! :linkage => podfile_properties['ios.useFrameworks'].to_sym if podfile_properties['ios.useFrameworks']
@@ -20,7 +24,7 @@ target 'HelloWorld' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    :hermes_enabled => flags[:hermes_enabled] || podfile_properties['expo.jsEngine'] == 'hermes',
+    :hermes_enabled => false,
     :fabric_enabled => flags[:fabric_enabled],
     # An absolute path to your application root.
     :app_path => "#{Dir.pwd}/.."
@@ -32,18 +36,24 @@ target 'HelloWorld' do
   # if !ENV['CI']
   #   use_flipper!()
   # end
-
-  post_install do |installer|
-    react_native_post_install(installer)
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
-  end
-
-  post_integrate do |installer|
-    begin
-      expo_patch_react_imports!(installer)
-    rescue => e
-      Pod::UI.warn e
-    end
-  end
-
 end
+
+target 'HelloWorldTests' do
+  inherit! :search_paths
+
+  #pod 'Nimble', :podspec => './../../../ios/Nimble.podspec'
+end
+
+post_install do |installer|
+  react_native_post_install(installer)
+  __apply_Xcode_12_5_M1_post_install_workaround(installer)
+end
+
+post_integrate do |installer|
+  begin
+    expo_patch_react_imports!(installer)
+  rescue => e
+    Pod::UI.warn e
+  end
+end
+
